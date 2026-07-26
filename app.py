@@ -19,22 +19,18 @@ def load_data():
 matches, deliveries = load_data()
 st.success("✅ Data Loaded!")
 
-st.header("📋 Matches Data Preview")
 st.dataframe(matches.head(10), use_container_width=True)
 
-# Columns chupiddam
-st.write("**Matches lo unna columns:**", list(matches.columns))
-
-st.header("🏆 Top 10 Winning Teams")
-if 'winner' in matches.columns:
-    winners = matches['winner'].value_counts().head(10)
-    fig1 = px.bar(x=winners.index, y=winners.values, title='Top 10 Winning Teams')
-    st.plotly_chart(fig1, use_container_width=True)
-else:
-    st.error("❌ 'winner' column dorakaledu. Kaindi column peru ni cheppu")
-
+# 1. Top 10 Run Scorers
 st.header("🔥 Top 10 Run Scorers")
-if 'batter' in deliveries.columns and 'batsman_runs' in deliveries.columns:
-    top_batters = deliveries.groupby('batter')['batsman_runs'].sum().sort_values(ascending=False).head(10)
-    fig2 = px.bar(x=top_batters.index, y=top_batters.values, title='Top 10 Run Scorers')
-    st.plotly_chart(fig2, use_container_width=True)
+top_batters = deliveries.groupby('batter')['batsman_runs'].sum().sort_values(ascending=False).head(10)
+fig1 = px.bar(x=top_batters.index, y=top_batters.values, title='Top 10 Run Scorers')
+fig1.update_layout(xaxis_tickangle=-45)
+st.plotly_chart(fig1, use_container_width=True)
+
+# 2. Most Player of Match Awards
+st.header("🏆 Most Player of Match Awards")
+pom = matches['player_of_match'].value_counts().head(10)
+fig2 = px.bar(x=pom.index, y=pom.values, title='Top 10 Player of Match')
+fig2.update_layout(xaxis_tickangle=-45)
+st.plotly_chart(fig2, use_container_width=True)
