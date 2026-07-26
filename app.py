@@ -17,22 +17,15 @@ def load_data():
     return matches, deliveries
 
 matches, deliveries = load_data()
-st.success("✅ Data loaded successfully!")
-
-# Columns chupiddam
-st.subheader("Matches Columns")
-st.write(list(matches.columns))
-
-st.subheader("Deliveries Columns") 
-st.write(list(deliveries.columns))
+st.success("✅ Data loaded!")
 
 st.dataframe(matches.head(10), use_container_width=True)
 
-# Winner chart
+# Winner find cheyadam
 st.subheader("🏆 Top 10 Winning Teams")
 win_col = None
 for col in matches.columns:
-    if 'win' in col.lower():
+    if 'win' in col.lower() or 'winner' in col.lower():
         win_col = col
         break
 
@@ -41,7 +34,7 @@ if win_col:
     fig1 = px.bar(x=winners.index, y=winners.values, title='Top 10 Winning Teams')
     st.plotly_chart(fig1, use_container_width=True)
 else:
-    st.warning("Winner column dorakaledu")
+    st.write("Matches columns:", list(matches.columns))
 
 # Top batsmen
 st.subheader("🔥 Top 10 Run Scorers")
@@ -49,3 +42,5 @@ if 'batter' in deliveries.columns and 'batsman_runs' in deliveries.columns:
     top_batters = deliveries.groupby('batter')['batsman_runs'].sum().sort_values(ascending=False).head(10)
     fig2 = px.bar(x=top_batters.index, y=top_batters.values, title='Top 10 Run Scorers')
     st.plotly_chart(fig2, use_container_width=True)
+else:
+    st.write("Deliveries columns:", list(deliveries.columns))
