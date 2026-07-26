@@ -19,67 +19,36 @@ def load_data():
     deliveries = pd.read_csv(deliveries_url)
     return matches, deliveries
 
-try:
-    matches, deliveries = load_data()
-    st.success("✅ Data loaded successfully from Google Drive!")
+matches, deliveries = load_data()
+st.success("✅ Data loaded successfully from Google Drive!")
 
-    # Column names auto detect cheyadam
-    season_col = 'season' if 'season' in matches.columns else 'Year'
-    if season_col not in matches.columns and 'match_date' in matches.columns:
-        matches['season'] = pd.to_datetime(matches['match_date']).dt.year
-        season_col = 'season'
-    
-    win_col = 'winner' if 'winner' in matches.columns else 'winning_team'
-    match_id_col = 'id' if 'id' in matches.columns else 'match_id'
+# Data chupistham
+st.header("📋 Matches Data Sample")
+st.dataframe(matches.head(10), use_container_width=True)
 
-    # Sidebar filters
-    st.sidebar.header("Filters")
-    seasons = st.sidebar.multiselect("Select Season", options=sorted(matches[season_col].unique()), default=sorted(matches[season_col].unique()))
-    
-    filtered_matches = matches[matches[season_col].isin(seasons)]
-    filtered_deliveries = deliveries[deliveries['match_id'].isin(filtered_matches[match_id_col])]
+st.header("📋 Deliveries Data Sample") 
+st.dataframe(deliveries.head(10), use_container_width=True)
 
-    # Tabs
-    tab1, tab2, tab3 = st.tabs(["📊 Overview", "🏆 Teams", "🔥 Players"])
+st.divider()
 
-    with tab1:
-        st.header("Matches Data")
-        st.dataframe(filtered_matches.head(10), use_container_width=True)
+# Winner chart - column peru auto detect
+st.subheader("🏆 Top 10 Winning Teams")
+win_col = None
+for col in ['winner', 'winning_team', 'Winner']:
+    if col in matches.columns:
+        win_col = col
+        break
 
-        st.header("Deliveries Data") 
-        st.dataframe(filtered_deliveries.head(10), use_container_width=True)
+if win_col:
+    winners = matches[win_col].value_counts().head(10)
+    fig1 = px.bar(x=winners.index, y=winners.values, title='Top 10 Winning Teams')
+    st.plotly_chart(fig1, use_container_width=True)
+else:
+    st.info(f"Winner column dorakaledu. Available columns: {list(matches.columns)[:10]}")
 
-        st.subheader("📊 Matches per Season")
-        season_counts = filtered_matches[season_col].value_counts().sort_index()
-        fig2 = px.line(x=season_counts.index, y=season_counts.values, markers=True, title='Matches per Season')
-        st.plotly_chart(fig2, use_container_width=True)
-
-    with tab2:
-        st.subheader("🏆 Most Matches Won by Team")
-        if win_col in filtered_matches.columns:
-            winners = filtered_matches[win_col].value_counts().head(10)
-            fig1 = px.bar(x=winners.index, y=winners.values, title='Top 10 Winning Teams')
-            st.plotly_chart(fig1, use_container_width=True)
-
-        st.subheader("Toss Winner vs Match Winner")
-        if 'toss_winner' in filtered_matches.columns and win_col in filtered_matches.columns:
-            toss_win_match_win = (filtered_matches['toss_winner'] == filtered_matches[win_col]).sum()
-            st.metric("Toss Win = Match Win", f"{toss_win_match_win} times")
-
-    with tab3:
-        st.subheader("🔥 Top 10 Run Scorers")
-        if 'batter' in filtered_deliveries.columns and 'batsman_runs' in filtered_deliveries.columns:
-            top_batters = filtered_deliveries.groupby('batter')['batsman_runs'].sum().sort_values(ascending=False).head(10)
-            fig3 = px.bar(x=top_batters.index, y=top_batters.values, title='Top 10 Run Scorers')
-            st.plotly_chart(fig3, use_container_width=True)
-
-        st.subheader("⚡ Top 10 Wicket Takers")
-        if 'bowler' in filtered_deliveries.columns and 'is_wicket' in filtered_deliveries.columns:
-            wickets = filtered_deliveries[filtered_deliveries['is_wicket'] == 1]
-            top_bowlers = wickets['bowler'].value_counts().head(10)
-            fig4 = px.bar(x=top_bowlers.index, y=top_bowlers.values, title='Top 10 Wicket Takers')
-            st.plotly_chart(fig4, use_container_width=True)
-
-except Exception as e:
-    st.error(f"Error loading data: {e}")
-    st.info("Check if Google Drive links are public and FILE_IDs are correct")
+# Top batsmen
+st.subheader("🔥 Top 10 Run Scorers")
+if 'batter' in deliveries.columns and 'batsman_runs' in deliveries.columns:
+    top_batters = deliveries.groupby('batter')['batsman_runs'].sum().sort_values(ascending=False).head(10)
+    fig2 = px.bar(x=top_batters.index, y=top_batters.values, title='Top 10 Run Scorers')
+    st.plotly_chart(fig2, use_container_width=True)
