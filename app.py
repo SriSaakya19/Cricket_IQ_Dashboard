@@ -23,12 +23,21 @@ try:
     matches, deliveries = load_data()
     st.success("✅ Data loaded successfully from Google Drive!")
 
+    # Column names auto detect cheyadam
+    season_col = 'season' if 'season' in matches.columns else 'Year'
+    if season_col not in matches.columns and 'match_date' in matches.columns:
+        matches['season'] = pd.to_datetime(matches['match_date']).dt.year
+        season_col = 'season'
+    
+    win_col = 'winner' if 'winner' in matches.columns else 'winning_team'
+    match_id_col = 'id' if 'id' in matches.columns else 'match_id'
+
     # Sidebar filters
     st.sidebar.header("Filters")
-    seasons = st.sidebar.multiselect("Select Season", options=sorted(matches['season'].unique()), default=sorted(matches['season'].unique()))
+    seasons = st.sidebar.multiselect("Select Season", options=sorted(matches[season_col].unique()), default=sorted(matches[season_col].unique()))
     
-    filtered_matches = matches[matches['season'].isin(seasons)]
-    filtered_deliveries = deliveries[deliveries['match_id'].isin(filtered_matches['id'])]
+    filtered_matches = matches[matches[season_col].isin(seasons)]
+    filtered_deliveries = deliveries[deliveries['match_id'].isin(filtered_matches[match_id_col])]
 
     # Tabs
     tab1, tab2, tab3 = st.tabs(["📊 Overview", "🏆 Teams", "🔥 Players"])
@@ -41,21 +50,16 @@ try:
         st.dataframe(filtered_deliveries.head(10), use_container_width=True)
 
         st.subheader("📊 Matches per Season")
-        if 'season' in filtered_matches.columns:
-            season_counts = filtered_matches['season'].value_counts().sort_index()
-            fig2 = px.line(x=season_counts.index, y=season_counts.values, markers=True, title='Matches per Season')
-            st.plotly_chart(fig2, use_container_width=True)
+        season_counts = filtered_matches[season_col].value_counts().sort_index()
+        fig2 = px.line(x=season_counts.index, y=season_counts.values, markers=True, title='Matches per Season')
+        st.plotly_chart(fig2, use_container_width=True)
 
     with tab2:
         st.subheader("🏆 Most Matches Won by Team")
-        # 'winner' lekunte 'winning_team' try chey
-        win_col = 'winner' if 'winner' in filtered_matches.columns else 'winning_team'
         if win_col in filtered_matches.columns:
             winners = filtered_matches[win_col].value_counts().head(10)
             fig1 = px.bar(x=winners.index, y=winners.values, title='Top 10 Winning Teams')
             st.plotly_chart(fig1, use_container_width=True)
-        else:
-            st.warning(f"Winner column dorakaledu")
 
         st.subheader("Toss Winner vs Match Winner")
         if 'toss_winner' in filtered_matches.columns and win_col in filtered_matches.columns:
