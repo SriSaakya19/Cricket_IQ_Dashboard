@@ -21,14 +21,24 @@ st.success("✅ Data loaded successfully!")
 
 st.dataframe(matches.head(10), use_container_width=True)
 
-# Top 10 Winning Teams
+# Top 10 Winning Teams - Safe version
 st.subheader("🏆 Top 10 Winning Teams")
-winners = matches['winner'].value_counts().head(10)
-fig1 = px.bar(x=winners.index, y=winners.values, title='Top 10 Winning Teams')
-st.plotly_chart(fig1, use_container_width=True)
+win_col = None
+for col in matches.columns:
+    if 'win' in col.lower():
+        win_col = col
+        break
+
+if win_col:
+    winners = matches[win_col].value_counts().head(10)
+    fig1 = px.bar(x=winners.index, y=winners.values, title='Top 10 Winning Teams')
+    st.plotly_chart(fig1, use_container_width=True)
+else:
+    st.warning(f"Winner column dorakaledu. Columns: {list(matches.columns)}")
 
 # Top 10 Run Scorers
 st.subheader("🔥 Top 10 Run Scorers")
-top_batters = deliveries.groupby('batter')['batsman_runs'].sum().sort_values(ascending=False).head(10)
-fig2 = px.bar(x=top_batters.index, y=top_batters.values, title='Top 10 Run Scorers')
-st.plotly_chart(fig2, use_container_width=True)
+if 'batter' in deliveries.columns and 'batsman_runs' in deliveries.columns:
+    top_batters = deliveries.groupby('batter')['batsman_runs'].sum().sort_values(ascending=False).head(10)
+    fig2 = px.bar(x=top_batters.index, y=top_batters.values, title='Top 10 Run Scorers')
+    st.plotly_chart(fig2, use_container_width=True)
