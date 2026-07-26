@@ -22,12 +22,19 @@ st.success("✅ Data Loaded!")
 st.header("📋 Matches Data Preview")
 st.dataframe(matches.head(10), use_container_width=True)
 
+# Columns chupiddam
+st.write("**Matches lo unna columns:**", list(matches.columns))
+
 st.header("🏆 Top 10 Winning Teams")
-winners = matches['winner'].value_counts().head(10)
-fig1 = px.bar(x=winners.index, y=winners.values)
-st.plotly_chart(fig1, use_container_width=True)
+if 'winner' in matches.columns:
+    winners = matches['winner'].value_counts().head(10)
+    fig1 = px.bar(x=winners.index, y=winners.values, title='Top 10 Winning Teams')
+    st.plotly_chart(fig1, use_container_width=True)
+else:
+    st.error("❌ 'winner' column dorakaledu. Kaindi column peru ni cheppu")
 
 st.header("🔥 Top 10 Run Scorers")
-top_batters = deliveries.groupby('batter')['batsman_runs'].sum().sort_values(ascending=False).head(10)
-fig2 = px.bar(x=top_batters.index, y=top_batters.values)
-st.plotly_chart(fig2, use_container_width=True)
+if 'batter' in deliveries.columns and 'batsman_runs' in deliveries.columns:
+    top_batters = deliveries.groupby('batter')['batsman_runs'].sum().sort_values(ascending=False).head(10)
+    fig2 = px.bar(x=top_batters.index, y=top_batters.values, title='Top 10 Run Scorers')
+    st.plotly_chart(fig2, use_container_width=True)
