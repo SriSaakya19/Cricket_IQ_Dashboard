@@ -17,3 +17,18 @@ st.success("✅ Data Loaded!")
 
 st.write("**Columns:**", list(deliveries.columns))
 st.dataframe(deliveries.head(20), use_container_width=True)
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.title("🏏 Cricket IQ Analytics Dashboard")
+st.success("✅ Data Loaded!")
+
+matches = deliveries  # ippudu nee file idhe matches
+st.dataframe(matches.head(10), use_container_width=True)
+
+st.header("🏆 Top 10 Player of Match")
+pom = matches['player_of_match'].value_counts().head(10)
+fig = px.bar(x=pom.index, y=pom.values)
+fig.update_layout(xaxis_tickangle=-45)
+st.plotly_chart(fig)
