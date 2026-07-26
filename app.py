@@ -12,29 +12,26 @@ DELIVERIES_FILE_ID = "1h0kIMBu2Zy9i6P5Z3Ip7v-7NUGcbbmpe"
 def load_data():
     matches_url = f'https://drive.google.com/uc?export=download&id={MATCHES_FILE_ID}'
     deliveries_url = f'https://drive.google.com/uc?export=download&id={DELIVERIES_FILE_ID}'
-    matches = pd.read_csv(matches_url)
-    deliveries = pd.read_csv(deliveries_url)
+    
+    matches = pd.read_csv(matches_url)      # Ikkada matches
+    deliveries = pd.read_csv(deliveries_url) # Ikkada deliveries
     return matches, deliveries
 
 matches, deliveries = load_data()
-st.success("✅ Data loaded successfully!")
+st.success("✅ Data loaded!")
 
+# Matches data kanipiddam
+st.subheader("📋 Matches Data Preview")
 st.dataframe(matches.head(10), use_container_width=True)
 
-# Top 10 Winning Teams - Safe version
+# Top 10 Winning Teams
 st.subheader("🏆 Top 10 Winning Teams")
-win_col = None
-for col in matches.columns:
-    if 'win' in col.lower():
-        win_col = col
-        break
-
-if win_col:
-    winners = matches[win_col].value_counts().head(10)
+if 'winner' in matches.columns:
+    winners = matches['winner'].value_counts().head(10)
     fig1 = px.bar(x=winners.index, y=winners.values, title='Top 10 Winning Teams')
     st.plotly_chart(fig1, use_container_width=True)
 else:
-    st.warning(f"Winner column dorakaledu. Columns: {list(matches.columns)}")
+    st.write("Matches columns:", list(matches.columns))
 
 # Top 10 Run Scorers
 st.subheader("🔥 Top 10 Run Scorers")
